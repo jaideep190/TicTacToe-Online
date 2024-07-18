@@ -11,6 +11,7 @@ const io = socketIo(server, {
   cors: {
     origin: 'https://tic-tac-toe-online-six.vercel.app',
     methods: ['GET', 'POST'],
+    credentials: true
   },
 });
 
@@ -18,7 +19,7 @@ app.use(cors({
     origin: 'https://tic-tac-toe-online-six.vercel.app',
     methods: ['GET', 'POST'],
     credentials: true
-  }));
+}));
 app.use(express.json());
 
 mongoose.connect('mongodb+srv://jaideep:jaideep@cluster0.jxrrdcm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
@@ -137,3 +138,5 @@ function checkWinner(board) {
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = server;
