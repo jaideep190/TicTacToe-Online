@@ -14,7 +14,11 @@ const io = socketIo(server, {
   },
 });
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://tic-tac-toe-online-six.vercel.app',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }));
 app.use(express.json());
 
 mongoose.connect('mongodb+srv://jaideep:jaideep@cluster0.jxrrdcm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
