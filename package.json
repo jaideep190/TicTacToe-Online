@@ -6,6 +6,7 @@
       "dev": "cd client && npm run dev",
       "build": "cd client && npm run build && cd .. && npm run build-server",
       "start": "node server.js",
+      "build-server": "echo 'Implement your server build logic here'",
       "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
       "preview": "vite preview"
     },
