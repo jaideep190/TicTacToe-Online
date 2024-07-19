@@ -16,7 +16,7 @@ const io = socketIo(server, {
 });
 
 app.use(cors({
-    origin: 'https://tic-tac-toe-online-client.vercel.app',
+    origin: 'https://tic-tac-toe-online-mu.vercel.app',
     methods: ['GET', 'POST'],
     credentials: true
 }));
