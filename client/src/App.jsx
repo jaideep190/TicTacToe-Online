@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import Game from './components/Game';
 
-const socket = io('https://tic-tac-toe-online-api.vercel.app', {
-  transports: ['websocket', 'polling'],
-  withCredentials: true,
-});
+const socket = io('https://tictactoe-online-api.onrender.com');
 
 function App() {
   const [gameId, setGameId] = useState(null);
