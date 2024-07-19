@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'https://tic-tac-toe-online-client.vercel.app',
+    origin: 'https://tic-tac-toe-online-mu.vercel.app',
     methods: ['GET', 'POST'],
     credentials: true
   },
