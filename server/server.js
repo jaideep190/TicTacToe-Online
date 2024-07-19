@@ -31,8 +31,6 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => console.log('Connected to MongoDB'));
 
-const games = new Map();
-
 io.on('connection', (socket) => {
   console.log('New client connected');
 
@@ -52,13 +50,11 @@ io.on('connection', (socket) => {
         socket.join(game._id.toString());
         socket.emit('gameJoined', { gameId: game._id, player: 'O' });
         io.to(game._id.toString()).emit('gameStart');
-        setTimeout(() => {
-          io.to(game._id.toString()).emit('updateGame', {
-            board: game.board,
-            currentPlayer: game.currentPlayer,
-            winner: game.winner,
-          });
-        }, 3000);
+        io.to(game._id.toString()).emit('updateGame', {
+          board: game.board,
+          currentPlayer: game.currentPlayer,
+          winner: game.winner,
+        });
       } else {
         socket.emit('error', 'Game is full');
       }
@@ -71,9 +67,9 @@ io.on('connection', (socket) => {
   socket.on('move', async ({ gameId, index, player }) => {
     try {
       const game = await Game.findById(gameId);
-      if (!game) return;
+      if (!game || game.winner) return;
 
-      if (game.board[index] || game.winner || game.currentPlayer !== player) return;
+      if (game.board[index] || game.currentPlayer !== player) return;
 
       game.board[index] = player;
       game.currentPlayer = player === 'X' ? 'O' : 'X';
@@ -102,7 +98,7 @@ io.on('connection', (socket) => {
       if (game) {
         game.winner = game.players[0] === socket.id ? 'O' : 'X';
         await game.save();
-        io.to(game._id.toString()).emit('playerDisconnected');
+        io.to(game._id.toString()).emit('playerDisconnected', game.winner);
       }
     } catch (error) {
       console.error('Error handling disconnect:', error);
@@ -112,14 +108,9 @@ io.on('connection', (socket) => {
 
 function checkWinner(board) {
   const winPatterns = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
   ];
 
   for (const pattern of winPatterns) {

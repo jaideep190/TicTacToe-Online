@@ -9,11 +9,12 @@ function Game({ gameId, player, socket, onGoBack }) {
 
   useEffect(() => {
     socket.on('updateGame', ({ board, currentPlayer, winner }) => {
-      setBoard(prevBoard => {
-        return board.map((cell, index) => cell !== null ? cell : prevBoard[index]);
-      });
+      setBoard(board);
       setCurrentPlayer(currentPlayer);
-      setWinner(winner);
+      if (winner) {
+        setWinner(winner);
+        setStatus(winner === player ? 'You win!' : winner === 'draw' ? "It's a draw!" : 'You lose!');
+      }
     });
 
     socket.on('gameStart', () => {
@@ -24,8 +25,8 @@ function Game({ gameId, player, socket, onGoBack }) {
       setStatus('Waiting for another player...');
     });
 
-    socket.on('playerDisconnected', () => {
-      setWinner(player);
+    socket.on('playerDisconnected', (disconnectedWinner) => {
+      setWinner(disconnectedWinner);
       setStatus('Your opponent disconnected. You win!');
     });
 
@@ -46,18 +47,14 @@ function Game({ gameId, player, socket, onGoBack }) {
     <div className="game-container">
       <div className="game-info">
         <p className="game-status">{status}</p>
-        {winner ? (
-          <p className="game-result">
-            {winner === player ? 'You win!' : winner === 'draw' ? "It's a draw!" : 'You lose!'}
-          </p>
-        ) : (
+        {!winner && (
           <p className="game-turn">
             {currentPlayer === player ? "Your turn" : "Opponent's turn"}
           </p>
         )}
       </div>
       <Board board={board} onCellClick={handleCellClick} />
-      {(winner || status === 'Your opponent disconnected. You win!') && (
+      {winner && (
         <button onClick={onGoBack} className="back-button">
           New Game
         </button>
