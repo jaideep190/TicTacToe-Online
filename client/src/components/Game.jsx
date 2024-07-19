@@ -9,7 +9,9 @@ function Game({ gameId, player, socket, onGoBack }) {
 
   useEffect(() => {
     socket.on('updateGame', ({ board, currentPlayer, winner }) => {
-      setBoard(board);
+      setBoard(prevBoard => {
+        return board.map((cell, index) => cell !== null ? cell : prevBoard[index]);
+      });
       setCurrentPlayer(currentPlayer);
       setWinner(winner);
     });

@@ -41,7 +41,7 @@ io.on('connection', (socket) => {
       let game = await Game.findOne({ passkey });
 
       if (!game) {
-        game = new Game({ passkey, players: [socket.id] });
+        game = new Game({ passkey, players: [socket.id], board: Array(9).fill(null) });
         await game.save();
         socket.join(game._id.toString());
         socket.emit('gameJoined', { gameId: game._id, player: 'X' });
