@@ -68,13 +68,17 @@ io.on('connection', (socket) => {
       const game = await Game.findById(gameId);
       if (!game || game.winner) return;
       if (game.board[index] || game.currentPlayer !== player) return;
+      
       game.board[index] = player;
       game.currentPlayer = player === 'X' ? 'O' : 'X';
+      
       const winner = checkWinner(game.board);
       if (winner) {
         game.winner = winner;
       }
+      
       await game.save();
+      
       io.to(gameId).emit('updateGame', {
         board: game.board,
         currentPlayer: game.currentPlayer,
@@ -85,14 +89,38 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('leaveGame', async () => {
+    try {
+      const game = await Game.findOne({ players: socket.id });
+      if (game) {
+        game.players = game.players.filter(id => id !== socket.id);
+        if (game.players.length === 0) {
+          await Game.findByIdAndDelete(game._id);
+        } else {
+          game.winner = game.players[0] === socket.id ? 'O' : 'X';
+          await game.save();
+          io.to(game._id.toString()).emit('playerDisconnected');
+        }
+        socket.leave(game._id.toString());
+      }
+    } catch (error) {
+      console.error('Error leaving game:', error);
+    }
+  });
+
   socket.on('disconnect', async () => {
     console.log('Client disconnected');
     try {
       const game = await Game.findOne({ players: socket.id });
       if (game) {
-        game.winner = game.players[0] === socket.id ? 'O' : 'X';
-        await game.save();
-        io.to(game._id.toString()).emit('playerDisconnected', game.winner);
+        game.players = game.players.filter(id => id !== socket.id);
+        if (game.players.length === 0) {
+          await Game.findByIdAndDelete(game._id);
+        } else {
+          game.winner = game.players[0] === socket.id ? 'O' : 'X';
+          await game.save();
+          io.to(game._id.toString()).emit('playerDisconnected');
+        }
       }
     } catch (error) {
       console.error('Error handling disconnect:', error);
@@ -106,18 +134,15 @@ function checkWinner(board) {
     [0, 3, 6], [1, 4, 7], [2, 5, 8],
     [0, 4, 8], [2, 4, 6]
   ];
-
   for (const pattern of winPatterns) {
     const [a, b, c] = pattern;
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
       return board[a];
     }
   }
-
   if (board.every((cell) => cell !== null)) {
     return 'draw';
   }
-
   return null;
 }
 

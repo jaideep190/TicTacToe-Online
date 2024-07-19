@@ -14,6 +14,8 @@ function Game({ gameId, player, socket, onGoBack }) {
       if (winner) {
         setWinner(winner);
         setStatus(winner === player ? 'You win!' : winner === 'draw' ? "It's a draw!" : 'You lose!');
+      } else {
+        setStatus(currentPlayer === player ? 'Your turn' : "Opponent's turn");
       }
     });
 
@@ -25,8 +27,8 @@ function Game({ gameId, player, socket, onGoBack }) {
       setStatus('Waiting for another player...');
     });
 
-    socket.on('playerDisconnected', (disconnectedWinner) => {
-      setWinner(disconnectedWinner);
+    socket.on('playerDisconnected', () => {
+      setWinner(player);
       setStatus('Your opponent disconnected. You win!');
     });
 
@@ -47,11 +49,6 @@ function Game({ gameId, player, socket, onGoBack }) {
     <div className="game-container">
       <div className="game-info">
         <p className="game-status">{status}</p>
-        {!winner && (
-          <p className="game-turn">
-            {currentPlayer === player ? "Your turn" : "Opponent's turn"}
-          </p>
-        )}
       </div>
       <Board board={board} onCellClick={handleCellClick} />
       {winner && (

@@ -36,6 +36,7 @@ function App() {
     setPlayer(null);
     setError('');
     setPasskey('');
+    socket.emit('leaveGame');
   };
 
   return (
