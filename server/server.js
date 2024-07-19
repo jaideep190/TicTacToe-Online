@@ -8,14 +8,19 @@ const Game = require('./models/Game');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: 'https://tic-tac-toe-online-mu.vercel.app',
-    methods: ['GET', 'POST'],
-    credentials: true
-  },
-});
-
-app.use(cors());
+    cors: {
+      origin: "*", // Allow all origins or specify your frontend URL
+      methods: ["GET", "POST"],
+      credentials: true,
+      allowedHeaders: ["my-custom-header"],
+    },
+  });
+  
+  app.use(cors({
+    origin: "*", // Allow all origins or specify your frontend URL
+    methods: ["GET", "POST"],
+    credentials: true,
+  }));
 app.use(express.json());
 
 mongoose.connect('mongodb+srv://jaideep:jaideep@cluster0.jxrrdcm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
