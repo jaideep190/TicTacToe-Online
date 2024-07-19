@@ -37,9 +37,8 @@ io.on('connection', (socket) => {
   socket.on('joinGame', async (passkey) => {
     try {
       let game = await Game.findOne({ passkey });
-
       if (!game) {
-        game = new Game({ passkey, players: [socket.id], board: Array(9).fill(null) });
+        game = new Game({ passkey, players: [socket.id], board: Array(9).fill(null), currentPlayer: 'X' });
         await game.save();
         socket.join(game._id.toString());
         socket.emit('gameJoined', { gameId: game._id, player: 'X' });
@@ -68,19 +67,16 @@ io.on('connection', (socket) => {
     try {
       const game = await Game.findById(gameId);
       if (!game || game.winner) return;
-
-      if (game.board[index] || game.currentPlayer !== player) return;
-
+      if (game.board[index] !== null || game.currentPlayer !== player) return;
+      
       game.board[index] = player;
       game.currentPlayer = player === 'X' ? 'O' : 'X';
-
       const winner = checkWinner(game.board);
       if (winner) {
         game.winner = winner;
       }
-
       await game.save();
-
+      
       io.to(gameId).emit('updateGame', {
         board: game.board,
         currentPlayer: game.currentPlayer,
@@ -112,18 +108,15 @@ function checkWinner(board) {
     [0, 3, 6], [1, 4, 7], [2, 5, 8],
     [0, 4, 8], [2, 4, 6]
   ];
-
   for (const pattern of winPatterns) {
     const [a, b, c] = pattern;
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
       return board[a];
     }
   }
-
   if (board.every((cell) => cell !== null)) {
     return 'draw';
   }
-
   return null;
 }
 
